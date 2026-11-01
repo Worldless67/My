@@ -3,8 +3,7 @@ name: Build Plugin
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -20,10 +19,10 @@ jobs:
           distribution: 'temurin'
 
       - name: Build with Maven
-        run: mvn -B package --file pom.xml
+        run: mvn -B package --file "Freezman Bedrock Java/pom.xml"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
           name: FrizMineBedrock-jar
-          path: target/*.jar
+          path: "Freezman Bedrock Java/target/*.jar"
