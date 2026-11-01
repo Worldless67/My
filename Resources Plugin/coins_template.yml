@@ -1,0 +1,9 @@
+# Шаблон выдачи монет
+# Используйте этот формат для настройки наград
+rewards:
+  kill_mob: 5.0
+  join_server: 10.0
+  daily_reward: 50.0
+
+currency_name: "Монеты"
+max_balance: 1000000
