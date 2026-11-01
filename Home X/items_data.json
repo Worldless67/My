@@ -1,0 +1,22 @@
+{
+  "items": [
+    {
+      "id": "diamond_sword",
+      "name": "Алмазный меч",
+      "price": 500.0,
+      "rarity": "rare"
+    },
+    {
+      "id": "iron_ingot",
+      "name": "Железный слиток",
+      "price": 10.0,
+      "rarity": "common"
+    },
+    {
+      "id": "emerald",
+      "name": "Изумруд",
+      "price": 100.0,
+      "rarity": "uncommon"
+    }
+  ]
+}
