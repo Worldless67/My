@@ -1,0 +1,11 @@
+# Шаблон конфигурации VR режима
+vr_mode:
+  enabled: false
+  cost_to_enter: 100.0
+  reward_multiplier: 1.5
+  map_id: "vr_arena_01"
+  
+settings:
+  time_limit_minutes: 15
+  max_players: 10
+  auto_start: true
