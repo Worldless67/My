@@ -3,6 +3,8 @@ package ru.frizmin;
 import cn.nukkit.Player;
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
+import cn.nukkit.entity.Entity;
+import cn.nukkit.entity.damage.EntityDamageByEntityEvent;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.entity.EntityDeathEvent;
@@ -37,6 +39,7 @@ public class FrizMineBedrock extends PluginBase implements Listener {
         hud = new FrizMineHud(economy);
         getServer().getPluginManager().registerEvents(this, this);
 
+        // Ивенты
         getServer().getScheduler().scheduleRepeatingTask(this,
                 () -> FrizMineEvents.runBeaconEvent(this), 72000, 72000);
         getServer().getScheduler().scheduleRepeatingTask(this,
@@ -46,7 +49,7 @@ public class FrizMineBedrock extends PluginBase implements Listener {
         getServer().getScheduler().scheduleRepeatingTask(this,
                 () -> FrizMineEvents.runBossEvent(this), 216000, 216000);
 
-        // HUD + талисманы раз в 3 секунды
+        // HUD + талисманы (каждые 3 секунды)
         getServer().getScheduler().scheduleRepeatingTask(this, () -> {
             for (Player p : getServer().getOnlinePlayers().values()) {
                 hud.update(p);
@@ -74,23 +77,26 @@ public class FrizMineBedrock extends PluginBase implements Listener {
 
     @EventHandler
     public void onEntityDeath(EntityDeathEvent event) {
-        Player killer = event.getEntity().getKiller();
-        if (killer == null) return;
+        // ИСПРАВЛЕНИЕ: getKiller() часто отсутствует в форках. Используем Cause.
+        Entity killer = event.getCause().getEntity();
+        
+        if (!(killer instanceof Player)) return;
+        Player player = (Player) killer;
 
         String tag = event.getEntity().getNameTag() == null ? "" : event.getEntity().getNameTag();
         if (tag.contains("БОСС")) {
-            economy.addDonate(killer, 250);
-            getServer().broadcastMessage("§4[Босс] §fИгрок §b" + killer.getName()
+            economy.addDonate(player, 250);
+            getServer().broadcastMessage("§4[Босс] §fИгрок §b" + player.getName()
                     + " §fубил Босса и получил §d250 ФК§f!");
             return;
         }
 
         if (!(event.getEntity() instanceof Player)) {
-            int count = killCount.merge(killer.getName(), 1, Integer::sum);
+            int count = killCount.merge(player.getName(), 1, Integer::sum);
             if (count == 10) {
-                economy.addDonate(killer, 50);
-                killer.sendMessage("§a[Испытание] §fУбито 10 монстров! Награда: §d50 ФК");
-                killCount.put(killer.getName(), 0);
+                economy.addDonate(player, 50);
+                player.sendMessage("§a[Испытание] §fУбито 10 монстров! Награда: §d50 ФК");
+                killCount.put(player.getName(), 0);
             }
         }
     }
@@ -110,7 +116,7 @@ public class FrizMineBedrock extends PluginBase implements Listener {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(CommandSender sender, Command command, String label, String args) {
         switch (command.getName().toLowerCase()) {
             case "economy": {
                 if (sender instanceof Player) {
@@ -144,10 +150,10 @@ public class FrizMineBedrock extends PluginBase implements Listener {
                 }
                 Player player = (Player) sender;
                 Position target = null;
-                if (args[0].equalsIgnoreCase("meteor")) target = FrizMineEvents.getLastMeteor();
-                else if (args[0].equalsIgnoreCase("beacon")) target = FrizMineEvents.getLastBeacon();
-                else if (args[0].equalsIgnoreCase("mystic")) target = FrizMineEvents.getLastMystic();
-                else if (args[0].equalsIgnoreCase("boss")) target = FrizMineEvents.getLastBoss();
+                if (args.equalsIgnoreCase("meteor")) target = FrizMineEvents.getLastMeteor();
+                else if (args.equalsIgnoreCase("beacon")) target = FrizMineEvents.getLastBeacon();
+                else if (args.equalsIgnoreCase("mystic")) target = FrizMineEvents.getLastMystic();
+                else if (args.equalsIgnoreCase("boss")) target = FrizMineEvents.getLastBoss();
                 if (target == null) {
                     sender.sendMessage("§cИвент ещё не запускался с момента запуска сервера.");
                     return true;
@@ -184,9 +190,9 @@ public class FrizMineBedrock extends PluginBase implements Listener {
                 if (!(sender instanceof Player)) return notPlayer(sender);
                 Player player = (Player) sender;
                 if (command.getName().equalsIgnoreCase("donate")
-                        && args.length >= 3 && args[0].equalsIgnoreCase("give")) {
+                        && args.length >= 3 && args.equalsIgnoreCase("give")) {
                     if (!sender.hasPermission("frizmine.donate.give")) return noPerm(sender);
-                    return giveCoins(player, args[1], args[2], sender);
+                    return giveCoins(player, args, args, sender);
                 }
                 player.showFormWindow(FrizMineShop.createForm(player, economy.getDonate(player)));
                 return true;
@@ -220,9 +226,9 @@ public class FrizMineBedrock extends PluginBase implements Listener {
             case "fccoin": {
                 if (!(sender instanceof Player)) return notPlayer(sender);
                 Player player = (Player) sender;
-                if (args.length >= 3 && args[0].equalsIgnoreCase("give")) {
+                if (args.length >= 3 && args.equalsIgnoreCase("give")) {
                     if (!sender.hasPermission("frizmine.donate.give")) return noPerm(sender);
-                    return giveCoins(player, args[1], args[2], sender);
+                    return giveCoins(player, args, args, sender);
                 }
                 sender.sendMessage("Использование: /fccoin give <ник> <сумма>");
                 sender.sendMessage("Твой баланс ФК-коинов: §d" + (int) economy.getDonate(player));
@@ -236,15 +242,15 @@ public class FrizMineBedrock extends PluginBase implements Listener {
                     return true;
                 }
                 Player player = (Player) sender;
-                Item item = Item.fromString(args[0]);
+                Item item = Item.fromString(args);
                 if (item.isNull()) {
-                    sender.sendMessage("§cНеизвестный предмет: " + args[0]);
+                    sender.sendMessage("§cНеизвестный предмет: " + args);
                     return true;
                 }
                 int count = 1;
                 if (args.length >= 2) {
                     try {
-                        count = Integer.parseInt(args[1]);
+                        count = Integer.parseInt(args);
                     } catch (NumberFormatException e) {
                         sender.sendMessage("§cКоличество должно быть числом.");
                         return true;
@@ -252,7 +258,7 @@ public class FrizMineBedrock extends PluginBase implements Listener {
                 }
                 item.setCount(count);
                 player.getInventory().addItem(item);
-                sender.sendMessage("§aВыдано: §b" + count + " x " + args[0]);
+                sender.sendMessage("§aВыдано: §b" + count + " x " + args);
                 return true;
             }
             case "map": {
@@ -271,7 +277,6 @@ public class FrizMineBedrock extends PluginBase implements Listener {
             case "nv": {
                 if (!(sender instanceof Player)) return notPlayer(sender);
                 Player player = (Player) sender;
-                // 16 = ночное зрение
                 cn.nukkit.effect.Effect nv = cn.nukkit.effect.Effect.getEffect(16);
                 if (nv != null) {
                     nv.setDuration(20 * 300);
@@ -295,12 +300,12 @@ public class FrizMineBedrock extends PluginBase implements Listener {
             }
             case "craft": {
                 if (!(sender instanceof Player)) return notPlayer(sender);
-                ((Player) sender).sendMessage("§7Верстак по команде временно недоступен — используй настоящий верстак. Функцию вернём в следующем обновлении.");
+                ((Player) sender).sendMessage("§7Верстак по команде временно недоступен.");
                 return true;
             }
             case "anvil": {
                 if (!(sender instanceof Player)) return notPlayer(sender);
-                ((Player) sender).sendMessage("§7Наковальня по команде временно недоступна — используй настоящую. Функцию вернём в следующем обновлении.");
+                ((Player) sender).sendMessage("§7Наковальня по команде временно недоступна.");
                 return true;
             }
             case "heal": {
@@ -314,11 +319,12 @@ public class FrizMineBedrock extends PluginBase implements Listener {
             case "ptime": {
                 if (!(sender instanceof Player)) return notPlayer(sender);
                 Player player = (Player) sender;
-                if (args.length >= 1 && args[0].equalsIgnoreCase("night")) {
-                    player.setPlayerTime(14000, false);
+                // ИСПРАВЛЕНИЕ: setPlayerTime -> setTime
+                if (args.length >= 1 && args.equalsIgnoreCase("night")) {
+                    player.setTime(14000, false);
                     player.sendMessage("§a[Лорд] §fВаше личное время: ночь.");
                 } else {
-                    player.setPlayerTime(0, false);
+                    player.setTime(0, false);
                     player.sendMessage("§a[Лорд] §fВаше личное время: день.");
                 }
                 return true;
@@ -388,7 +394,7 @@ public class FrizMineBedrock extends PluginBase implements Listener {
             player.sendMessage("§6[Кейс] §fВыпало: §d50 ФК-коинов!");
         } else {
             Item sword = Item.get(Item.NETHERITE_SWORD, 0, 1);
-            sword.addEnchantment(Enchantment.getEnchantment(9).setLevel(5)); // 9 = острота
+            sword.addEnchantment(Enchantment.getEnchantment(9).setLevel(5));
             player.getInventory().addItem(sword);
             player.sendMessage("§6[Кейс] §f§6ДЖЕКПОТ! §fНезеритовый меч с остротой 5!");
         }
