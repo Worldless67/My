@@ -1,9 +1,10 @@
 package ru.frizmin.economy;
 
 import cn.nukkit.Player;
-import cn.nukkit.scoreboard.data.DisplaySlot;
-import cn.nukkit.scoreboard.data.SortType;
+import cn.nukkit.network.protocol.types.DisplaySlot;
+import cn.nukkit.network.protocol.types.SortOrder;
 import cn.nukkit.scoreboard.scoreboard.Scoreboard;
+import cn.nukkit.scoreboard.scorer.FakeScorer;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -20,45 +21,57 @@ public class FrizMineHud {
     }
 
     public void create(Player p) {
-        remove(p);
-        joinTimes.put(p.getName(), System.currentTimeMillis());
-        Scoreboard sb = new Scoreboard(
-                "friz_hud_" + p.getName().toLowerCase(),
-                "§d§lFriz§fMine",
-                DisplaySlot.SIDEBAR,
-                SortType.DESCENDING
-        );
-        boards.put(p.getName(), sb);
-        sb.addViewer(p);
+        joinTimes.putIfAbsent(p.getName(), System.currentTimeMillis());
         update(p);
     }
 
     public void remove(Player p) {
-        Scoreboard sb = boards.remove(p.getName());
         joinTimes.remove(p.getName());
+        Scoreboard sb = boards.remove(p.getName());
         if (sb != null) {
-            sb.remove();
+            try {
+                sb.removeViewer(p, DisplaySlot.SIDEBAR);
+            } catch (Exception ignored) {
+            }
         }
     }
 
     public void update(Player p) {
-        Scoreboard sb = boards.get(p.getName());
-        if (sb == null) return;
+        // Убираем старую панель и создаём новую с актуальными строками
+        Scoreboard old = boards.remove(p.getName());
+        if (old != null) {
+            try {
+                old.removeViewer(p, DisplaySlot.SIDEBAR);
+            } catch (Exception ignored) {
+            }
+        }
 
-        long played = System.currentTimeMillis() - joinTimes.getOrDefault(p.getName(), System.currentTimeMillis());
+        joinTimes.putIfAbsent(p.getName(), System.currentTimeMillis());
+        long played = System.currentTimeMillis() - joinTimes.get(p.getName());
         long minutes = played / 60000;
         String timeStr = minutes < 60 ? minutes + "м" : (minutes / 60) + "ч " + (minutes % 60) + "м";
 
         String date = new SimpleDateFormat("dd/MM/yy HH:mm").format(new Date());
         String rank = p.isOp() ? "§6Создатель" : "§fИгрок";
 
-        sb.setLine(1, "§fНик: §b" + p.getName());
-        sb.setLine(2, "§fРанг: " + rank);
-        sb.setLine(3, "§fБаланс: §a" + (int) economy.getBalance(p));
-        sb.setLine(4, "§fФК-коины: §d" + (int) economy.getDonate(p));
-        sb.setLine(5, "§fКоорд: §eX:" + (int) p.getX() + " Y:" + (int) p.getY() + " Z:" + (int) p.getZ());
-        sb.setLine(6, "§fНаиграно: §b" + timeStr);
-        sb.setLine(7, "§fОнлайн: §6" + p.getServer().getOnlinePlayers().size());
-        sb.setLine(8, "§f" + date);
+        Scoreboard sb = new Scoreboard(
+                "friz_hud_" + p.getName().toLowerCase(),
+                "§d§lFriz§fMine",
+                "dummy",
+                SortOrder.DESCENDING
+        );
+
+        sb.addLine(new FakeScorer("§f" + date), 9);
+        sb.addLine(new FakeScorer("§fОнлайн: §6" + p.getServer().getOnlinePlayers().size()), 8);
+        sb.addLine(new FakeScorer("§fНаиграно: §b" + timeStr), 7);
+        sb.addLine(new FakeScorer("§fКоорд: §eX:" + p.getFloorX() + " Y:" + p.getFloorY() + " Z:" + p.getFloorZ()), 6);
+        sb.addLine(new FakeScorer("§fФК-коины: §d" + (int) economy.getDonate(p)), 5);
+        sb.addLine(new FakeScorer("§fБаланс: §a" + (int) economy.getBalance(p)), 4);
+        sb.addLine(new FakeScorer("§fРанг: " + rank), 3);
+        sb.addLine(new FakeScorer("§fНик: §b" + p.getName()), 2);
+
+        sb.addViewer(p, DisplaySlot.SIDEBAR);
+        boards.put(p.getName(), sb);
     }
 }
+
