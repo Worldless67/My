@@ -25,23 +25,26 @@ public class FrizMineEvents {
     public static Position getLastMystic() { return lastMysticPos; }
     public static Position getLastBoss() { return lastBossPos; }
 
+    // Метеорит: огненный кратер + сундук с лутом
     public static void runMeteorEvent(FrizMineBedrock plugin) {
         Level level = Server.getInstance().getDefaultLevel();
         if (level == null) return;
 
         int x = RANDOM.nextInt(2000) - 1000;
         int z = RANDOM.nextInt(2000) - 1000;
-        int y = level.getHighestBlockAt(x, z) + 100;
+        int y = level.getHighestBlockAt(x, z) + 1;
 
         lastMeteorPos = new Position(x, y, z, level);
 
-        Entity fireball = level.spawnEntity("fireball", new Vector3(x, y, z));
-        fireball.setMotion(new Vector3(0, -1, 0));
+        level.setBlock(new Vector3(x, y, z), Block.get(Block.FIRE));
+        level.setBlock(new Vector3(x + 1, y, z), Block.get(Block.FIRE));
+        level.setBlock(new Vector3(x, y, z + 1), Block.get(Block.FIRE));
+        level.setBlock(new Vector3(x + 1, y, z + 1), Block.get(Block.FIRE));
 
-        spawnLootChest(level, x + 2, z + 2);
+        spawnLootChest(level, x + 3, z + 3);
 
         Server.getInstance().broadcastMessage(
-                "§c[Ивент] §fМетеорит упал! Координаты: §aX: " + x + ", Y: " + (y - 100) + ", Z: " + z);
+                "§c[Ивент] §fМетеорит упал и оставил огненный кратер! Координаты: §aX: " + x + ", Y: " + y + ", Z: " + z);
     }
 
     public static void runBeaconEvent(FrizMineBedrock plugin) {
@@ -99,13 +102,17 @@ public class FrizMineEvents {
         int z = RANDOM.nextInt(1000) - 500;
         int y = level.getHighestBlockAt(x, z) + 1;
 
-        lastBossPos = new Position(x, y, z, level);
+        Position pos = new Position(x, y, z, level);
+        lastBossPos = pos;
 
-        Entity boss = level.spawnEntity("Zombie", new Vector3(x, y, z));
-        boss.setNameTag("§4БОСС Хранитель Подземелий");
-        boss.setNameTagVisible(true);
-        boss.setMaxHealth(300);
-        boss.setHealth(300);
+        Entity boss = Entity.createEntity("Zombie", pos);
+        if (boss != null) {
+            boss.setNameTag("§4БОСС Хранитель Подземелий");
+            boss.setNameTagVisible(true);
+            boss.setMaxHealth(300);
+            boss.setHealth(300);
+            boss.spawnToAll();
+        }
 
         Server.getInstance().broadcastMessage(
                 "§4[Босс] §fБосс появился! Координаты: §aX: " + x + ", Y: " + y + ", Z: " + z);
