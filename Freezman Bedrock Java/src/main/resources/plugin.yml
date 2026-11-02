@@ -1,14 +1,119 @@
 name: FrizMineBedrock
 main: ru.frizmin.FrizMineBedrock
-version: "1.0.0"
+version: "1.6.0"
 author: FrizMin
-description: Economy system
+description: Economy, kits, events, HUD, shop, seller, bosses, mystics
 commands:
   economy:
     description: Check your balance
     usage: "/economy"
     permission: frizmine.economy.use
+  kit:
+    description: Starter kit
+    usage: "/kit"
+    permission: frizmine.kit.use
+  eventtp:
+    description: Teleport to event (creator only)
+    usage: "/eventtp <meteor|beacon|mystic|boss>"
+    permission: frizmine.event.tp
+  spawnmeteor:
+    description: Spawn meteor (admin)
+    usage: "/spawnmeteor"
+    permission: frizmine.event.admin
+  spawnbeacon:
+    description: Spawn beacon (admin)
+    usage: "/spawnbeacon"
+    permission: frizmine.event.admin
+  mystic:
+    description: Spawn mystic chest (admin)
+    usage: "/mystic"
+    permission: frizmine.event.admin
+  boss:
+    description: Spawn boss (admin)
+    usage: "/boss"
+    permission: frizmine.event.admin
+  donate:
+    description: Donate shop
+    usage: "/donate [give player amount]"
+  shop:
+    description: Donate shop
+    usage: "/shop"
+  dm:
+    description: Donate market
+    usage: "/dm"
+  sell:
+    description: Sell resources
+    usage: "/sell"
+  case:
+    description: Open a case for 100 FC
+    usage: "/case"
+  challenges:
+    description: Daily challenges
+    usage: "/challenges"
+  fccoin:
+    description: Give FC coins
+    usage: "/fccoin give <ник> <сумма>"
+    permission: frizmine.donate.give
+  gif:
+    description: Give yourself any item
+    usage: "/gif <предмет> [кол-во]"
+    permission: frizmine.gif.use
+  map:
+    description: Get a map
+    usage: "/map"
+  feed:
+    description: Satisfy hunger
+    usage: "/feed"
+    permission: frizmine.vip.voyn
+  craft:
+    description: Open crafting table
+    usage: "/craft"
+    permission: frizmine.vip.voyn
+  nv:
+    description: Night vision
+    usage: "/nv"
+    permission: frizmine.vip.voyn
+  ec:
+    description: Open ender chest
+    usage: "/ec"
+    permission: frizmine.vip.voyn
+  exp:
+    description: Get experience
+    usage: "/exp"
+    permission: frizmine.vip.strannik
+  anvil:
+    description: Open anvil
+    usage: "/anvil"
+    permission: frizmine.vip.strannik
+  heal:
+    description: Heal yourself
+    usage: "/heal"
+    permission: frizmine.vip.lord
+  ptime:
+    description: Personal time
+    usage: "/ptime <day|night>"
+    permission: frizmine.vip.lord
+  top:
+    description: Teleport up
+    usage: "/top"
+    permission: frizmine.vip.lord
 permissions:
   frizmine.economy.use:
     default: true
-    description: Allows using economy commands
+  frizmine.kit.use:
+    default: true
+  frizmine.event.tp:
+    default: op
+  frizmine.event.admin:
+    default: op
+  frizmine.donate.give:
+    default: op
+  frizmine.gif.use:
+    default: op
+  frizmine.vip.voyn:
+    default: false
+  frizmine.vip.strannik:
+    default: false
+  frizmine.vip.lord:
+    default: false
+
