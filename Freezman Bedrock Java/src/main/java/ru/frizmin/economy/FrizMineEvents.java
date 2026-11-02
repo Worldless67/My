@@ -9,6 +9,8 @@ import cn.nukkit.entity.Entity;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.Position;
+import cn.nukkit.math.Vector3;
+import ru.frizmin.FrizMineBedrock;
 
 import java.util.Random;
 
@@ -20,21 +22,10 @@ public class FrizMineEvents {
     private static Position lastMysticPos = null;
     private static Position lastBossPos = null;
 
-    public static Position getLastMeteor() {
-        return lastMeteorPos;
-    }
-
-    public static Position getLastBeacon() {
-        return lastBeaconPos;
-    }
-
-    public static Position getLastMystic() {
-        return lastMysticPos;
-    }
-
-    public static Position getLastBoss() {
-        return lastBossPos;
-    }
+    public static Position getLastMeteor() { return lastMeteorPos; }
+    public static Position getLastBeacon() { return lastBeaconPos; }
+    public static Position getLastMystic() { return lastMysticPos; }
+    public static Position getLastBoss() { return lastBossPos; }
 
     public static void runMeteorEvent(FrizMineBedrock plugin) {
         Level level = Server.getInstance().getDefaultLevel();
@@ -44,10 +35,9 @@ public class FrizMineEvents {
         int z = RANDOM.nextInt(2000) - 1000;
         int y = level.getHighestBlockAt(x, z) + 100;
 
-        Position pos = new Position(x, y, z, level);
-        lastMeteorPos = pos;
+        lastMeteorPos = new Position(x, y, z, level);
 
-        Entity fireball = level.spawnEntity("fireball", pos);
+        Entity fireball = level.spawnEntity("fireball", new Position(x, y, z, level));
         fireball.setMotion(new Vector3(0, -1, 0));
 
         spawnLootChest(level, x + 2, z + 2);
@@ -67,9 +57,7 @@ public class FrizMineEvents {
         Position pos = new Position(x, y, z, level);
         lastBeaconPos = pos;
 
-        Block beaconBlock = new BlockBeacon();
-        beaconBlock.setPosition(pos);
-        level.setBlock(pos, beaconBlock, true, true);
+        level.setBlock(new Vector3(x, y, z), Block.get(Block.BEACON));
 
         spawnLootChest(level, x + 2, z + 2);
 
@@ -77,7 +65,6 @@ public class FrizMineEvents {
                 "§6[Ивент] §fМаяк-убийца появился! Координаты: §aX: " + x + ", Y: " + y + ", Z: " + z);
     }
 
-    // Мистический сундук (мистик) — рандомный лут
     public static void runMysticEvent(FrizMineBedrock plugin) {
         Level level = Server.getInstance().getDefaultLevel();
         if (level == null) return;
@@ -89,16 +76,14 @@ public class FrizMineEvents {
         Position pos = new Position(x, y, z, level);
         lastMysticPos = pos;
 
-        Block chestBlock = new BlockChest();
-        chestBlock.setPosition(pos);
-        level.setBlock(pos, chestBlock, true, true);
+        level.setBlock(new Vector3(x, y, z), Block.get(Block.CHEST));
 
         BlockEntityChest chest = (BlockEntityChest) level.getBlockEntity(pos);
         if (chest != null) {
             int[][] pool = {
                     {Item.DIAMOND, 8}, {Item.EMERALD, 6}, {Item.GOLD_INGOT, 24},
                     {Item.IRON_INGOT, 32}, {Item.NETHERITE_INGOT, 2},
-                    {Item.ENCHANT_GOLDEN_APPLE, 2}, {Item.TOTEM, 1}, {Item.OBSIDIAN, 16}
+                    {466, 2}, {449, 1}, {Item.OBSIDIAN, 16}
             };
             for (int i = 0; i < 3; i++) {
                 int[] pick = pool[RANDOM.nextInt(pool.length)];
@@ -110,7 +95,6 @@ public class FrizMineEvents {
                 "§5[Мистик] §fМистический сундук появился! Координаты: §aX: " + x + ", Y: " + y + ", Z: " + z);
     }
 
-    // Босс — усиленный зомби, убийца получает 250 ФК
     public static void runBossEvent(FrizMineBedrock plugin) {
         Level level = Server.getInstance().getDefaultLevel();
         if (level == null) return;
@@ -136,19 +120,18 @@ public class FrizMineEvents {
         int y = level.getHighestBlockAt(x, z) + 1;
         Position chestPos = new Position(x, y, z, level);
 
-        Block chestBlock = new BlockChest();
-        chestBlock.setPosition(chestPos);
-        level.setBlock(chestPos, chestBlock, true, true);
+        level.setBlock(new Vector3(x, y, z), Block.get(Block.CHEST));
 
         BlockEntityChest chest = (BlockEntityChest) level.getBlockEntity(chestPos);
         if (chest != null) {
             chest.getInventory().addItem(
                     Item.get(Item.DIAMOND, 0, 16),
                     Item.get(Item.NETHERITE_INGOT, 0, 8),
-                    Item.get(Item.ENCHANTED_BOOK, 0, 4),
+                    Item.get(724, 0, 4),      // зачарованная книга
                     Item.get(Item.GOLDEN_APPLE, 0, 4),
-                    Item.get(Item.TOTEM, 0, 2)
+                    Item.get(449, 0, 2)       // тотем
             );
         }
     }
 }
+
