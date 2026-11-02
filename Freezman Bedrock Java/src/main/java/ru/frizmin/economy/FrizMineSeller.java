@@ -2,7 +2,7 @@ package ru.frizmin.economy;
 
 import cn.nukkit.Player;
 import cn.nukkit.form.element.ElementButton;
-import cn.nukkit.form.window.SimpleForm;
+import cn.nukkit.form.window.FormWindowSimple;
 import cn.nukkit.item.Item;
 
 public class FrizMineSeller {
@@ -19,8 +19,8 @@ public class FrizMineSeller {
     };
     private static final double[] PRICES = {25, 30, 10, 8, 2, 3, 15, 200};
 
-    public static SimpleForm createForm(Player p, double balance) {
-        SimpleForm form = new SimpleForm(FORM_TITLE,
+    public static FormWindowSimple createForm(Player p, double balance) {
+        FormWindowSimple form = new FormWindowSimple(FORM_TITLE,
                 "§fСкупщик покупает ресурсы за монеты.\n§fТвой баланс: §a" + (int) balance
                         + " монет\n\n§7Нажми на ресурс, чтобы продать ВСЕ такие предметы из инвентаря:");
         for (int i = 0; i < NAMES.length; i++) {
@@ -45,7 +45,6 @@ public class FrizMineSeller {
             return;
         }
 
-        // Убираем все предметы этого типа из инвентаря
         p.getInventory().remove(new Item(itemId, 0, 1));
 
         double earned = total * PRICES[index];
