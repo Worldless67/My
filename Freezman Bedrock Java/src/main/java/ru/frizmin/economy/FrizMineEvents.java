@@ -2,8 +2,6 @@ package ru.frizmin.economy;
 
 import cn.nukkit.Server;
 import cn.nukkit.block.Block;
-import cn.nukkit.block.BlockBeacon;
-import cn.nukkit.block.BlockChest;
 import cn.nukkit.blockentity.BlockEntityChest;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.item.Item;
@@ -37,7 +35,7 @@ public class FrizMineEvents {
 
         lastMeteorPos = new Position(x, y, z, level);
 
-        Entity fireball = level.spawnEntity("fireball", new Position(x, y, z, level));
+        Entity fireball = level.spawnEntity("fireball", new Vector3(x, y, z));
         fireball.setMotion(new Vector3(0, -1, 0));
 
         spawnLootChest(level, x + 2, z + 2);
@@ -54,8 +52,7 @@ public class FrizMineEvents {
         int z = RANDOM.nextInt(2000) - 1000;
         int y = level.getHighestBlockAt(x, z) + 1;
 
-        Position pos = new Position(x, y, z, level);
-        lastBeaconPos = pos;
+        lastBeaconPos = new Position(x, y, z, level);
 
         level.setBlock(new Vector3(x, y, z), Block.get(Block.BEACON));
 
@@ -73,12 +70,11 @@ public class FrizMineEvents {
         int z = RANDOM.nextInt(2000) - 1000;
         int y = level.getHighestBlockAt(x, z) + 1;
 
-        Position pos = new Position(x, y, z, level);
-        lastMysticPos = pos;
+        lastMysticPos = new Position(x, y, z, level);
 
         level.setBlock(new Vector3(x, y, z), Block.get(Block.CHEST));
 
-        BlockEntityChest chest = (BlockEntityChest) level.getBlockEntity(pos);
+        BlockEntityChest chest = (BlockEntityChest) level.getBlockEntity(new Vector3(x, y, z));
         if (chest != null) {
             int[][] pool = {
                     {Item.DIAMOND, 8}, {Item.EMERALD, 6}, {Item.GOLD_INGOT, 24},
@@ -103,10 +99,9 @@ public class FrizMineEvents {
         int z = RANDOM.nextInt(1000) - 500;
         int y = level.getHighestBlockAt(x, z) + 1;
 
-        Position pos = new Position(x, y, z, level);
-        lastBossPos = pos;
+        lastBossPos = new Position(x, y, z, level);
 
-        Entity boss = level.spawnEntity("Zombie", pos);
+        Entity boss = level.spawnEntity("Zombie", new Vector3(x, y, z));
         boss.setNameTag("§4БОСС Хранитель Подземелий");
         boss.setNameTagVisible(true);
         boss.setMaxHealth(300);
@@ -118,20 +113,18 @@ public class FrizMineEvents {
 
     private static void spawnLootChest(Level level, int x, int z) {
         int y = level.getHighestBlockAt(x, z) + 1;
-        Position chestPos = new Position(x, y, z, level);
 
         level.setBlock(new Vector3(x, y, z), Block.get(Block.CHEST));
 
-        BlockEntityChest chest = (BlockEntityChest) level.getBlockEntity(chestPos);
+        BlockEntityChest chest = (BlockEntityChest) level.getBlockEntity(new Vector3(x, y, z));
         if (chest != null) {
             chest.getInventory().addItem(
                     Item.get(Item.DIAMOND, 0, 16),
                     Item.get(Item.NETHERITE_INGOT, 0, 8),
-                    Item.get(724, 0, 4),      // зачарованная книга
+                    Item.get(724, 0, 4),
                     Item.get(Item.GOLDEN_APPLE, 0, 4),
-                    Item.get(449, 0, 2)       // тотем
+                    Item.get(449, 0, 2)
             );
         }
     }
 }
-
