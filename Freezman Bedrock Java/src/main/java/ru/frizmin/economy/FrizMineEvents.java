@@ -6,11 +6,9 @@ import cn.nukkit.block.BlockBeacon;
 import cn.nukkit.block.BlockChest;
 import cn.nukkit.blockentity.BlockEntityChest;
 import cn.nukkit.entity.Entity;
-import cn.nukkit.entity.projectile.EntityFireball;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.Position;
-import cn.nukkit.math.Vector3;
 
 import java.util.Random;
 
