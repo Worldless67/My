@@ -40,24 +40,27 @@ public class FrizMineBedrock extends PluginBase implements Listener {
         hud = new FrizMineHud(economy);
         getServer().getPluginManager().registerEvents(this, this);
 
-        getServer().getScheduler().scheduleRepeatingTask(this,
-                () -> FrizMineEvents.runBeaconEvent(this), 72000, 72000);
-        getServer().getScheduler().scheduleRepeatingTask(this,
-                () -> FrizMineEvents.runMeteorEvent(this), 144000, 144000);
-        getServer().getScheduler().scheduleRepeatingTask(this,
-                () -> FrizMineEvents.runMysticEvent(this), 36000, 36000);
-        getServer().getScheduler().scheduleRepeatingTask(this,
-                () -> FrizMineEvents.runBossEvent(this), 216000, 216000);
+        // Ивенты (базовая перегрузка планировщика: задача + период)
+        getServer().getScheduler().scheduleRepeatingTask(
+                () -> FrizMineEvents.runBeaconEvent(this), 72000);
+        getServer().getScheduler().scheduleRepeatingTask(
+                () -> FrizMineEvents.runMeteorEvent(this), 144000);
+        getServer().getScheduler().scheduleRepeatingTask(
+                () -> FrizMineEvents.runMysticEvent(this), 36000);
+        getServer().getScheduler().scheduleRepeatingTask(
+                () -> FrizMineEvents.runBossEvent(this), 216000);
 
-        getServer().getScheduler().scheduleRepeatingTask(this, () -> {
+        // HUD + талисманы каждые 3 секунды
+        getServer().getScheduler().scheduleRepeatingTask(() -> {
             for (Player p : getServer().getOnlinePlayers().values()) {
                 hud.update(p);
                 FrizMineShop.applyTalismans(p);
             }
-        }, 60, 60);
+        }, 60);
 
-        getServer().getScheduler().scheduleRepeatingTask(this,
-                () -> economy.saveAll(), 1200, 1200);
+        // Автосохранение раз в минуту
+        getServer().getScheduler().scheduleRepeatingTask(
+                () -> economy.saveAll(), 1200);
 
         getLogger().info("FrizMine Bedrock has been enabled!");
     }
@@ -263,7 +266,7 @@ public class FrizMineBedrock extends PluginBase implements Listener {
             case "map": {
                 if (!(sender instanceof Player)) return notPlayer(sender);
                 Player player = (Player) sender;
-                player.getInventory().addItem(Item.get(358, 0, 1)); // 358 = заполненная карта
+                player.getInventory().addItem(Item.get(358, 0, 1));
                 player.sendMessage("§a[Карта] §fКарта выдана! Исследуй мир.");
                 return true;
             }
@@ -277,7 +280,7 @@ public class FrizMineBedrock extends PluginBase implements Listener {
             case "nv": {
                 if (!(sender instanceof Player)) return notPlayer(sender);
                 Player player = (Player) sender;
-                Effect nv = Effect.getEffect(16); // 16 = ночное зрение
+                Effect nv = Effect.getEffect(16);
                 if (nv != null) {
                     nv.setDuration(20 * 300);
                     nv.setVisible(false);
@@ -320,7 +323,6 @@ public class FrizMineBedrock extends PluginBase implements Listener {
             case "ptime": {
                 if (!(sender instanceof Player)) return notPlayer(sender);
                 Player player = (Player) sender;
-                // В этом ядре личное время игрока недоступно — меняем время мира
                 if (args.length >= 1 && args[0].equalsIgnoreCase("night")) {
                     player.getLevel().setTime(14000);
                     player.sendMessage("§a[Лорд] §fВремя мира переведено на ночь.");
@@ -395,7 +397,7 @@ public class FrizMineBedrock extends PluginBase implements Listener {
             player.sendMessage("§6[Кейс] §fВыпало: §d50 ФК-коинов!");
         } else {
             Item sword = Item.get(Item.NETHERITE_SWORD, 0, 1);
-            sword.addEnchantment(Enchantment.getEnchantment(9).setLevel(5)); // 9 = острота
+            sword.addEnchantment(Enchantment.getEnchantment(9).setLevel(5));
             player.getInventory().addItem(sword);
             player.sendMessage("§6[Кейс] §f§6ДЖЕКПОТ! §fНезеритовый меч с остротой 5!");
         }
