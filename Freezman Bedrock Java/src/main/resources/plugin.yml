@@ -1,13 +1,13 @@
 name: FrizMineBedrock
-version: '1.0.0'
 main: ru.frizmin.FrizMineBedrock
-api-version: '1.20'
-authors: [FrizMin]
-description: Economy system for Bedrock Edition
+version: "1.0.0"
+author: FrizMin
+description: Economy system
 commands:
   economy:
     description: Check your balance
-    usage: /<command> [player]
+    usage: "/economy"
+    permission: frizmine.economy.use
 permissions:
   frizmine.economy.use:
     default: true
