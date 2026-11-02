@@ -17,6 +17,7 @@ import cn.nukkit.item.Item;
 import cn.nukkit.item.enchantment.Enchantment;
 import cn.nukkit.level.Position;
 import cn.nukkit.potion.Effect;
+import cn.nukkit.plugin.PluginBase;
 import ru.frizmin.economy.FrizMineEconomy;
 import ru.frizmin.economy.FrizMineEvents;
 import ru.frizmin.economy.FrizMineHud;
